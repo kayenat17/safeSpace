@@ -1,4 +1,4 @@
-##SafeSpace 🛡️
+## SafeSpace 🛡️
 An integrated web application for chat toxicity detection, safety ping alerts, and relationship health analysis.
 
 ### Features
