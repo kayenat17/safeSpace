@@ -1,0 +1,78 @@
+{% extends "pinging_base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="welcome-section">
+        <h2 style="color: var(--text-color);">Relationship Analysis Dashboard</h2>
+        <p style="color: var(--text-color); opacity: 0.8;">View and manage your relationship analyses.</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <h3 style="color: var(--primary-color);">New Analysis</h3>
+            <p>Start a new relationship analysis</p>
+            <a href="{{ url_for('pinging.questionnaire') }}" class="btn btn-primary" style="margin-top: 1rem;">Begin Analysis</a>
+        </div>
+
+        <div class="card">
+            <h3 style="color: var(--secondary-color);">Recent Analyses</h3>
+            {% if relationships %}
+                <div class="analysis-list">
+                    {% for relationship in relationships %}
+                        <div class="analysis-item">
+                            <h4>{{ relationship.person_name }}</h4>
+                            <p>{{ relationship.relationship_type }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No analyses yet. Start your first one!</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .dashboard-container {
+        padding: 2rem 0;
+    }
+
+    .welcome-section {
+        margin-bottom: 2rem;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .analysis-list {
+        margin-top: 1rem;
+    }
+
+    .analysis-item {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        transition: transform 0.3s ease;
+    }
+
+    .analysis-item:hover {
+        transform: translateX(5px);
+        background: linear-gradient(135deg, rgba(248, 181, 211, 0.1), rgba(181, 232, 248, 0.1));
+    }
+
+    .analysis-item h4 {
+        margin: 0;
+        color: var(--text-color);
+    }
+
+    .analysis-item p {
+        margin: 0.5rem 0 0;
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+</style>
+{% endblock %} 

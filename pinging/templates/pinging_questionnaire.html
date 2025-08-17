@@ -1,0 +1,229 @@
+{% extends "pinging_base.html" %}
+
+{% block content %}
+<div class="questionnaire-container">
+    <div class="card">
+        <h2 class="questionnaire-title">Relationship Analysis</h2>
+        <p class="questionnaire-subtitle">Discover insights about your relationships</p>
+        {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+        {% endif %}
+        <form method="POST" action="{{ url_for('pinging.questionnaire') }}" id="questionnaire-form">
+            <div class="form-group">
+                <label for="relationship_type">Relationship Type</label>
+                <select id="relationship_type" name="relationship_type" class="form-control" required>
+                    <option value="">Select relationship type</option>
+                    <option value="family">Family Member</option>
+                    <option value="sibling">Sibling</option>
+                    <option value="partner">Partner</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="person_name">Person's Name</label>
+                <input type="text" id="person_name" name="person_name" class="form-control" required>
+            </div>
+            <div id="questions-container">
+                <!-- Questions will be dynamically loaded here -->
+            </div>
+            <button type="submit" class="btn btn-primary submit-btn">
+                <span class="btn-text">Submit Analysis</span>
+                <span class="btn-icon">→</span>
+            </button>
+        </form>
+    </div>
+    <div class="advice-section">
+        <h3 class="advice-title">Relationship Tips & Advice</h3>
+        <div class="advice-grid">
+            <div class="advice-card">
+                <div class="advice-icon">💬</div>
+                <h4>Communication</h4>
+                <p>Practice active listening and express your feelings openly. Remember that good communication is the foundation of any strong relationship.</p>
+            </div>
+            <div class="advice-card">
+                <div class="advice-icon">⏰</div>
+                <h4>Quality Time</h4>
+                <p>Make time for meaningful interactions. Even small moments of connection can strengthen your bond significantly.</p>
+            </div>
+            <div class="advice-card">
+                <div class="advice-icon">🤝</div>
+                <h4>Trust Building</h4>
+                <p>Be reliable and consistent in your actions. Trust is built through small, everyday interactions.</p>
+            </div>
+            <div class="advice-card">
+                <div class="advice-icon">❤️</div>
+                <h4>Emotional Support</h4>
+                <p>Show empathy and understanding. Being there for each other during both good and challenging times strengthens your connection.</p>
+            </div>
+            <div class="advice-card">
+                <div class="advice-icon">🎯</div>
+                <h4>Boundaries</h4>
+                <p>Respect personal space and boundaries. Healthy relationships require a balance of togetherness and independence.</p>
+            </div>
+            <div class="advice-card">
+                <div class="advice-icon">🌱</div>
+                <h4>Growth</h4>
+                <p>Support each other's personal growth. Celebrate achievements and encourage development in areas of interest.</p>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const relationshipTypeSelect = document.getElementById('relationship_type');
+    const questionsContainer = document.getElementById('questions-container');
+    
+    const questions = {
+        family: [
+            {
+                id: 'question_1',
+                text: 'How often do you communicate with this family member?',
+                type: 'radio',
+                options: [
+                    { value: '1', label: 'Rarely' },
+                    { value: '2', label: 'Sometimes' },
+                    { value: '3', label: 'Often' },
+                    { value: '4', label: 'Very often' },
+                    { value: '5', label: 'Daily' }
+                ]
+            },
+            {
+                id: 'question_2',
+                text: 'How would you rate your emotional connection with this family member?',
+                type: 'radio',
+                options: [
+                    { value: '1', label: 'Very weak' },
+                    { value: '2', label: 'Weak' },
+                    { value: '3', label: 'Moderate' },
+                    { value: '4', label: 'Strong' },
+                    { value: '5', label: 'Very strong' }
+                ]
+            },
+            {
+                id: 'question_3',
+                text: 'What challenges do you face in this relationship?',
+                type: 'textarea',
+                placeholder: 'Describe any challenges or areas for improvement...'
+            }
+        ],
+        sibling: [
+            {
+                id: 'question_1',
+                text: 'How well do you get along with your sibling?',
+                type: 'radio',
+                options: [
+                    { value: '1', label: 'Not at all' },
+                    { value: '2', label: 'Poorly' },
+                    { value: '3', label: 'Okay' },
+                    { value: '4', label: 'Well' },
+                    { value: '5', label: 'Very well' }
+                ]
+            },
+            {
+                id: 'question_2',
+                text: 'How often do you spend quality time together?',
+                type: 'radio',
+                options: [
+                    { value: '1', label: 'Never' },
+                    { value: '2', label: 'Rarely' },
+                    { value: '3', label: 'Sometimes' },
+                    { value: '4', label: 'Often' },
+                    { value: '5', label: 'Very often' }
+                ]
+            },
+            {
+                id: 'question_3',
+                text: 'What interests do you share with your sibling?',
+                type: 'textarea',
+                placeholder: 'Describe shared interests or activities...'
+            }
+        ],
+        partner: [
+            {
+                id: 'question_1',
+                text: 'How satisfied are you with your relationship?',
+                type: 'radio',
+                options: [
+                    { value: '1', label: 'Very dissatisfied' },
+                    { value: '2', label: 'Dissatisfied' },
+                    { value: '3', label: 'Neutral' },
+                    { value: '4', label: 'Satisfied' },
+                    { value: '5', label: 'Very satisfied' }
+                ]
+            },
+            {
+                id: 'question_2',
+                text: 'How well do you communicate with your partner?',
+                type: 'radio',
+                options: [
+                    { value: '1', label: 'Very poorly' },
+                    { value: '2', label: 'Poorly' },
+                    { value: '3', label: 'Okay' },
+                    { value: '4', label: 'Well' },
+                    { value: '5', label: 'Very well' }
+                ]
+            },
+            {
+                id: 'question_3',
+                text: 'What are your future goals together?',
+                type: 'textarea',
+                placeholder: 'Describe your shared goals and aspirations...'
+            }
+        ]
+    };
+    
+    function loadQuestions(relationshipType) {
+        questionsContainer.innerHTML = '';
+        
+        if (!questions[relationshipType]) {
+            return;
+        }
+        
+        questions[relationshipType].forEach((question, index) => {
+            const questionCard = document.createElement('div');
+            questionCard.className = 'question-card';
+            
+            const questionTitle = document.createElement('h3');
+            questionTitle.textContent = `${index + 1}. ${question.text}`;
+            questionCard.appendChild(questionTitle);
+            
+            if (question.type === 'radio') {
+                question.options.forEach(option => {
+                    const radioDiv = document.createElement('div');
+                    radioDiv.className = 'radio-option';
+                    
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.id = `${question.id}_${option.value}`;
+                    radio.name = question.id;
+                    radio.value = option.value;
+                    radio.required = true;
+                    
+                    const label = document.createElement('label');
+                    label.htmlFor = `${question.id}_${option.value}`;
+                    label.textContent = option.label;
+                    
+                    radioDiv.appendChild(radio);
+                    radioDiv.appendChild(label);
+                    questionCard.appendChild(radioDiv);
+                });
+            } else if (question.type === 'textarea') {
+                const textarea = document.createElement('textarea');
+                textarea.name = question.id;
+                textarea.placeholder = question.placeholder;
+                textarea.className = 'form-control';
+                textarea.rows = 4;
+                questionCard.appendChild(textarea);
+            }
+            
+            questionsContainer.appendChild(questionCard);
+        });
+    }
+    
+    relationshipTypeSelect.addEventListener('change', function() {
+        loadQuestions(this.value);
+    });
+});
+</script>
+{% endblock %} 

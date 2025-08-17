@@ -1,0 +1,51 @@
+{% extends "pinging_base.html" %}
+
+{% block content %}
+<div class="flex justify-end mb-4">
+    <a href="/" class="inline-flex items-center px-4 py-2 rounded-full bg-pink-100 text-pink-700 font-semibold shadow-sm hover:bg-pink-200 transition">
+        <span class="mr-2">&#8592;</span> Back to Home
+    </a>
+</div>
+
+<div class="hero-section" style="text-align: center; padding: 4rem 0;">
+    <h1 style="font-size: 3rem; margin-bottom: 1.5rem; color: var(--text-color);">Discover Your Relationships</h1>
+    <p style="font-size: 1.2rem; margin-bottom: 2rem; color: var(--text-color); opacity: 0.8;">
+        Analyze and understand your relationships with family, siblings, and partners through our interactive questionnaire.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 1rem;">
+        <a href="{{ url_for('pinging.questionnaire') }}" class="btn btn-primary">Start Analysis</a>
+    </div>
+</div>
+
+<div class="features" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 4rem;">
+    <div class="card">
+        <h3 style="color: var(--primary-color); margin-bottom: 1rem;">Family Analysis</h3>
+        <p>Understand your family dynamics and improve your relationships with detailed insights.</p>
+    </div>
+    <div class="card">
+        <h3 style="color: var(--secondary-color); margin-bottom: 1rem;">Sibling Bonds</h3>
+        <p>Explore the unique dynamics of your sibling relationships and strengthen your bonds.</p>
+    </div>
+    <div class="card">
+        <h3 style="color: var(--accent-color); margin-bottom: 1rem;">Partner Connection</h3>
+        <p>Deepen your understanding of your romantic relationship and enhance your connection.</p>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, rgba(248, 181, 211, 0.1), rgba(181, 232, 248, 0.1));
+        border-radius: 20px;
+        margin: 2rem 0;
+    }
+
+    .features .card {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .features .card:hover {
+        background: linear-gradient(135deg, rgba(248, 181, 211, 0.1), rgba(181, 232, 248, 0.1));
+    }
+</style>
+{% endblock %} 

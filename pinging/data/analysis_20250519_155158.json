@@ -1,0 +1,29 @@
+{
+  "timestamp": "20250519_155158",
+  "relationship_type": "family",
+  "person_name": "kk",
+  "responses": [
+    "5",
+    "5",
+    "5",
+    "5",
+    "5",
+    "5",
+    "5",
+    "we live in other cities",
+    "i want to spend more quality time"
+  ],
+  "analysis": {
+    "overall_score": 5.0,
+    "strengths": [
+      "Strong emotional connection",
+      "Good communication patterns"
+    ],
+    "weaknesses": [],
+    "recommendations": [
+      "Maintain current positive patterns",
+      "Continue building on strengths"
+    ],
+    "insights": []
+  }
+}

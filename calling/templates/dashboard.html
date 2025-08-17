@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex justify-end mb-4">
+    <a href="/" class="inline-flex items-center px-4 py-2 rounded-full bg-pink-100 text-pink-700 font-semibold shadow-sm hover:bg-pink-200 transition">
+        <span class="mr-2">&#8592;</span> Back to Home
+    </a>
+</div>
+<div class="dashboard">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div class="card">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Safety Status</h2>
+            <div id="check-in-status" style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🟢</div>
+                <h3>You're Safe!</h3>
+                <p>Last check-in: <span id="last-check-in">{{ current_user.last_check_in.strftime('%Y-%m-%d %H:%M:%S') }}</span></p>
+                <button onclick="checkIn()" class="btn btn-primary" style="margin-top: 1rem;">Check In Now</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Current Location</h2>
+            <div id="current-location-text" style="text-align: center; padding: 1rem;">
+                <p>Fetching location...</p>
+            </div>
+            <div style="text-align: center; padding: 1rem;">
+                <img src="https://img.freepik.com/free-vector/safety-concept-illustration_114360-1004.jpg" 
+                     alt="Safety Illustration" 
+                     style="max-width: 100%; height: auto; border-radius: 8px; margin-top: 1rem;">
+                <p style="margin-top: 1rem; color: #666;">Your safety is our priority</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Emergency Contacts</h2>
+            {% if current_user.emergency_contacts %}
+                <div style="margin-bottom: 1rem;">
+                    {% for contact in current_user.emergency_contacts %}
+                        <div style="padding: 1rem; border-bottom: 1px solid #eee;">
+                            <h3>{{ contact.name }}</h3>
+                            <p>Email: {{ contact.email }}</p>
+                            {% if contact.phone %}
+                                <p>Phone: {{ contact.phone }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p style="text-align: center; padding: 2rem;">No emergency contacts added yet.</p>
+            {% endif %}
+            <a href="{{ url_for('calling.emergency_contacts') }}" class="btn btn-primary" style="width: 100%;">Manage Contacts</a>
+        </div>
+
+        <div class="card">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Emergency SOS</h2>
+            <div style="text-align: center; padding: 2rem;">
+                <p style="margin-bottom: 1.5rem;">In case of emergency, click the button below to send an SOS alert to all your emergency contacts.</p>
+                <button onclick="sendSOS()" class="btn" style="background-color: #dc3545; color: white; font-size: 1.2rem; padding: 1rem 2rem;">
+                    🚨 Send SOS Alert
+                </button>
+                <p style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                    This will immediately notify all your emergency contacts.
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="color: var(--primary-color); margin-bottom: 1rem;">Location History</h2>
+            <div id="location-history" style="padding: 1rem;">
+                <p>Loading history...</p>
+            </div>
+            <button onclick="clearHistory()" class="btn btn-danger" style="margin: 1rem;">Clear History</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function checkIn() {
+    fetch('/calling/check-in', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            const now = new Date();
+            document.getElementById('last-check-in').textContent = now.toLocaleString();
+            alert('Check-in successful!');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to check in. Please try again.');
+    });
+}
+
+function sendSOS() {
+    if (confirm('Are you sure you want to send an SOS alert to all your emergency contacts?')) {
+        fetch('/calling/send-sos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                alert('SOS alert sent successfully to all emergency contacts!');
+            } else {
+                alert(data.message || 'Failed to send SOS alert. Please try again.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to send SOS alert. Please try again.');
+        });
+    }
+}
+
+// Update check-in status every minute
+setInterval(() => {
+    const lastCheckIn = new Date(document.getElementById('last-check-in').textContent);
+    const now = new Date();
+    const hoursSinceLastCheckIn = (now - lastCheckIn) / (1000 * 60 * 60);
+    
+    const statusDiv = document.getElementById('check-in-status');
+    if (hoursSinceLastCheckIn >= 12) {
+        statusDiv.innerHTML = `
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔴</div>
+            <h3>Check-in Required!</h3>
+            <p>Last check-in: ${lastCheckIn.toLocaleString()}</p>
+            <button onclick="checkIn()" class="btn btn-primary" style="margin-top: 1rem;">Check In Now</button>
+        `;
+    }
+}, 60000);
+
+// --- Location Tracking ---
+const currentLocationTextDiv = document.getElementById('current-location-text');
+const locationHistoryDiv = document.getElementById('location-history');
+
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else {
+        currentLocationTextDiv.innerHTML = "Geolocation is not supported by this browser.";
+    }
+}
+
+function showPosition(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+    currentLocationTextDiv.innerHTML = `Latitude: ${latitude}, Longitude: ${longitude}`;
+    saveLocation(latitude, longitude);
+}
+
+function showError(error) {
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            currentLocationTextDiv.innerHTML = "User denied the request for Geolocation.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            currentLocationTextDiv.innerHTML = "Location information is unavailable.";
+            break;
+        case error.TIMEOUT:
+            currentLocationTextDiv.innerHTML = "The request to get user location timed out.";
+            break;
+        case error.UNKNOWN_ERROR:
+            currentLocationTextDiv.innerHTML = "An unknown error occurred.";
+            break;
+    }
+}
+
+function saveLocation(latitude, longitude) {
+    fetch('/calling/save-location', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ latitude: latitude, longitude: longitude })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            console.log('Location saved:', data.message);
+            fetchLocationHistory();
+        } else {
+            console.error('Failed to save location:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error saving location:', error);
+    });
+}
+
+function fetchLocationHistory() {
+    fetch('/calling/location-history')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                locationHistoryDiv.innerHTML = ''; // Clear loading message
+                if (data.history.length > 0) {
+                    data.history.forEach(location => {
+                        const p = document.createElement('p');
+                        p.textContent = `Lat: ${location.latitude}, Long: ${location.longitude} (at ${location.timestamp})`;
+                        locationHistoryDiv.appendChild(p);
+                    });
+                } else {
+                    locationHistoryDiv.innerHTML = '<p>No location history available.</p>';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching location history:', error);
+            locationHistoryDiv.innerHTML = '<p>Failed to load location history.</p>';
+        });
+}
+
+function clearHistory() {
+    if (confirm('Are you sure you want to clear your location history? This action cannot be undone.')) {
+        fetch('/calling/clear-location-history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                locationHistoryDiv.innerHTML = '<p>No location history available.</p>';
+                alert('Location history cleared successfully');
+            } else {
+                alert(data.message || 'Failed to clear location history');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to clear location history. Please try again.');
+        });
+    }
+}
+
+// Get location on page load and every 5 minutes
+window.onload = () => {
+    getLocation();
+    fetchLocationHistory();
+    setInterval(getLocation, 300000); // Update every 5 minutes (300000 milliseconds)
+};
+
+</script>
+
+{% endblock %} 

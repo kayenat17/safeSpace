@@ -1,0 +1,65 @@
+{% extends "pinging_base.html" %}
+
+{% block content %}
+<div class="results-container">
+    <div class="card">
+        <h2>Relationship Analysis Results</h2>
+        <div class="score-section">
+            <h3>Overall Score</h3>
+            <div class="score-display">
+                <div class="score-circle" style="background: linear-gradient(to right, var(--primary-color) {{ analysis.overall_score * 20 }}%, #e9ecef {{ analysis.overall_score * 20 }}%);">
+                    <span>{{ "%.1f"|format(analysis.overall_score) }}</span>
+                </div>
+                <p class="score-label">out of 5</p>
+            </div>
+        </div>
+        {% if analysis.strengths %}
+        <div class="analysis-section strengths">
+            <h3>Strengths</h3>
+            <ul>
+                {% for strength in analysis.strengths %}
+                <li>{{ strength }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if analysis.weaknesses %}
+        <div class="analysis-section weaknesses">
+            <h3>Areas for Improvement</h3>
+            <ul>
+                {% for weakness in analysis.weaknesses %}
+                <li>{{ weakness }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if analysis.recommendations %}
+        <div class="analysis-section recommendations">
+            <h3>Recommendations</h3>
+            <ul>
+                {% for recommendation in analysis.recommendations %}
+                <li>{{ recommendation }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% if analysis.insights %}
+        <div class="analysis-section insights">
+            <h3>Additional Insights</h3>
+            <ul>
+                {% for insight in analysis.insights %}
+                <li>{{ insight }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        <div class="action-buttons">
+            <a href="{{ url_for('pinging.questionnaire') }}" class="btn btn-secondary">Take Another Analysis</a>
+            <a href="{{ url_for('pinging.index') }}" class="btn btn-primary">Return Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('pinging.static', filename='css/results.css') }}">
+{% endblock %} 

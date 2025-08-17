@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="max-width: 400px; margin: 0 auto; padding: 2rem 0;">
+    <div class="card">
+        <h2 style="text-align: center; color: var(--primary-color); margin-bottom: 2rem;">Login</h2>
+        <form method="POST" action="{{ url_for('calling.login') }}">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+        </form>
+        <p style="text-align: center; margin-top: 1.5rem;">
+            Don't have an account? <a href="{{ url_for('calling.register') }}" style="color: var(--primary-color); text-decoration: none;">Register here</a>
+        </p>
+    </div>
+</div>
+{% endblock %} 

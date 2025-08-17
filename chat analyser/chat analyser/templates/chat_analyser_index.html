@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Toxicity Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fef0f3; /* Light pink background */
+        }
+        .card {
+            background-color: #ffffff; /* White background for card */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-radius: 1.5rem; /* More rounded corners */
+            padding: 2.5rem;
+        }
+        .pink-text {
+            color: #eb4b86; /* Pink text color */
+        }
+        .pink-button {
+            background-color: #eb4b86; /* Pink button color */
+            color: white;
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            transition: background-color 0.3s ease;
+        }
+        .pink-button:hover {
+            background-color: #c23e6e; /* Darker pink on hover */
+        }
+        
+        .toxicity-meter-bar {
+             height: 0.75rem;
+             border-radius: 9999px; /* Full rounded */
+             transition: width 0.5s ease-in-out;
+        }
+        .score-low { background-color: #48bb78; } /* Green */
+        .score-medium { background-color: #f6e05e; } /* Yellow */
+        .score-high { background-color: #f56565; } /* Red */
+
+         /* Simple loading spinner */
+        .loading-spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #ffffff;
+            border-radius: 50%;
+            width: 1.5rem;
+            height: 1.5rem;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+         /* Adjust for fixed header/footer if needed later */
+         .main-content {
+             padding-top: 0rem; /* Adjust if adding a fixed header */
+             padding-bottom: 0rem; /* Adjust if adding a fixed footer */
+         }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-white py-4 shadow-sm">
+        <div class="container mx-auto px-4 flex justify-between items-center">
+            <span class="text-xl font-bold pink-text">SafeSpace</span>
+         
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-4 py-12 main-content">
+        <div class="max-w-2xl mx-auto">
+            <div class="flex justify-end mb-4">
+                <a href="/" class="inline-flex items-center px-4 py-2 rounded-full bg-pink-100 text-pink-700 font-semibold shadow-sm hover:bg-pink-200 transition">
+                    <span class="mr-2">&#8592;</span> Back to Home
+                </a>
+            </div>
+            <!-- Main Section Title -->
+            <h1 class="text-3xl font-bold text-center mb-8 pink-text">Chat Analysis</h1>
+            <!-- Chat Pasting Card (Centered, Prominent) -->
+            <div class="card mb-8 mx-auto" style="max-width: 500px; border-radius: 20px;">
+                <label for="text-input" class="block text-gray-700 text-lg font-semibold mb-3 text-center">Enter or paste your chat below:</label>
+                <textarea id="text-input" 
+                          class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 mb-6"
+                          rows="6"
+                          placeholder="Type or paste your message here..."></textarea>
+                <button onclick="analyzeText()" class="pink-button w-full flex items-center justify-center">
+                     <span id="button-text">Analyze Text</span>
+                     <span id="loading-spinner" class="loading-spinner ml-2"></span>
+                </button>
+                <!-- Analysis Result Section -->
+                <div id="result" class="mt-8 p-6 bg-gray-50 rounded-lg hidden">
+                    <h2 class="text-xl font-semibold mb-4 text-gray-800">Analysis Result</h2>
+                     <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-gray-700 font-medium">Toxicity Score:</span>
+                            <span id="score" class="text-xl font-bold"></span>
+                        </div>
+                         <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                             <div id="toxicity-meter" class="toxicity-meter-bar" style="width: 0%"></div>
+                         </div>
+                     </div>
+                    <div class="text-sm text-gray-600">
+                        <p id="interpretation" class="font-medium"></p>
+                    </div>
+                </div>
+                <!-- Error Message Section -->
+                <div id="error" class="mt-4 p-4 bg-red-100 text-red-700 rounded-lg hidden"></div>
+            </div>
+            <!-- OCR Analysis Card (Centered, Smaller, Below) -->
+            <div class="card p-4 text-sm bg-pink-50 border border-pink-200 mb-8 mx-auto" style="max-width: 350px; border-radius: 16px;">
+                <div class="text-center mb-2 text-pink-700 font-semibold text-sm">Or analyze a chat screenshot (OCR)</div>
+                <form id="ocr-form" enctype="multipart/form-data" class="mb-2">
+                    <input type="file" id="ocr-image" name="image" accept="image/*" class="mb-2" style="font-size: 0.9rem;" required />
+                    <button type="submit" class="pink-button w-full flex items-center justify-center" style="font-size: 0.95rem; padding: 0.5rem 1rem;">
+                        <span id="ocr-button-text">Analyze Screenshot</span>
+                        <span id="ocr-loading-spinner" class="loading-spinner ml-2"></span>
+                    </button>
+                </form>
+                <div id="ocr-result" class="mt-2 p-3 bg-gray-50 rounded-lg hidden">
+                    <h3 class="text-base font-semibold mb-2 text-gray-800">Extracted Text</h3>
+                    <pre id="ocr-extracted-text" class="bg-white p-2 rounded mb-2 text-gray-700 text-xs"></pre>
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-gray-700 font-medium">Toxicity Score:</span>
+                        <span id="ocr-score" class="text-lg font-bold"></span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden mb-2">
+                        <div id="ocr-toxicity-meter" class="toxicity-meter-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="text-xs text-gray-600">
+                        <p id="ocr-interpretation" class="font-medium"></p>
+                    </div>
+                </div>
+                <div id="ocr-error" class="mt-2 p-2 bg-red-100 text-red-700 rounded-lg hidden text-xs"></div>
+            </div>
+
+            <!-- How It Works Section -->
+            <div class="mt-12">
+                <h2 class="text-xl font-bold mb-4 pink-text">How It Works</h2>
+                <ol class="list-decimal list-inside text-gray-700 space-y-2">
+                    <li>Copy and paste the conversation text into the text area.</li>
+                    <li>Our AI analyzes the text for various communication patterns:</li>
+                    <ul class="list-disc list-inside ml-6 space-y-1 text-gray-600">
+                        <li>Toxic language and abuse</li>
+                        <li>Manipulative behavior</li>
+                        <li>Gaslighting attempts</li>
+                        <li>Isolation tactics</li>
+                        <li>Controlling behavior</li>
+                    </ul>
+                    <li>Receive detailed analysis with a toxicity score and interpretation.</li>
+                </ol>
+            </div>
+
+            <!-- Privacy Note -->
+            <div class="mt-8 p-6 bg-pink-100 text-pink-800 rounded-lg border border-pink-200">
+                 <h3 class="text-lg font-semibold mb-3">Privacy Note</h3>
+                <p class="text-sm">
+                    The text you paste is sent to the Perspective API for analysis and is not stored by this application.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white py-6 mt-12 shadow-sm">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center text-gray-600 text-sm">
+            <span class="font-bold pink-text mb-4 md:mb-0">SafeSpace</span>
+            <div class="space-x-4">
+                <a href="#" class="hover:text-gray-800">About</a>
+                <a href="#" class="hover:text-gray-800">Privacy</a>
+                <a href="#" class="hover:text-gray-800">Resources</a>
+                <a href="#" class="hover:text-gray-800">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        async function analyzeText() {
+            const textInput = document.getElementById('text-input');
+            const resultDiv = document.getElementById('result');
+            const errorDiv = document.getElementById('error');
+            const scoreSpan = document.getElementById('score');
+            const toxicityMeter = document.getElementById('toxicity-meter');
+            const buttonText = document.getElementById('button-text');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            const interpretation = document.getElementById('interpretation');
+
+            const text = textInput.value.trim();
+
+            if (!text) {
+                errorDiv.textContent = 'Please enter some text to analyze.';
+                errorDiv.classList.remove('hidden');
+                resultDiv.classList.add('hidden');
+                return;
+            }
+
+            // Show loading state
+            buttonText.textContent = 'Analyzing...';
+            loadingSpinner.classList.remove('hidden');
+            errorDiv.classList.add('hidden');
+            resultDiv.classList.add('hidden'); // Hide previous result
+
+            try {
+                const response = await fetch('/chat-analyser/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    const score = data.score;
+                    const percentage = (score * 100).toFixed(1);
+                    scoreSpan.textContent = percentage + '%';
+                    
+                    // Update toxicity meter
+                    toxicityMeter.style.width = percentage + '%';
+                    
+                    // Set color and interpretation based on toxicity level
+                    toxicityMeter.className = 'toxicity-meter-bar'; // Reset classes
+                    if (score < 0.3) {
+                        toxicityMeter.classList.add('score-low');
+                        interpretation.textContent = 'This text appears to be non-toxic and appropriate.';
+                    } else if (score < 0.7) {
+                        toxicityMeter.classList.add('score-medium');
+                        interpretation.textContent = 'This text shows some potentially concerning content.';
+                    } else {
+                        toxicityMeter.classList.add('score-high');
+                        interpretation.textContent = 'This text contains highly toxic content.';
+                    }
+
+                    resultDiv.classList.remove('hidden');
+                } else {
+                    errorDiv.textContent = data.error || 'Failed to analyze text';
+                    errorDiv.classList.remove('hidden');
+                    resultDiv.classList.add('hidden');
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                errorDiv.textContent = 'An error occurred while analyzing the text';
+                errorDiv.classList.remove('hidden');
+                resultDiv.classList.add('hidden');
+            } finally {
+                // Reset button state
+                buttonText.textContent = 'Analyze Text';
+                loadingSpinner.classList.add('hidden');
+            }
+        }
+
+        // Add enter key support back for the textarea
+        document.getElementById('text-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                analyzeText();
+            }
+        });
+
+        // OCR Analysis
+        document.getElementById('ocr-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const ocrImageInput = document.getElementById('ocr-image');
+            const ocrResultDiv = document.getElementById('ocr-result');
+            const ocrErrorDiv = document.getElementById('ocr-error');
+            const ocrScoreSpan = document.getElementById('ocr-score');
+            const ocrToxicityMeter = document.getElementById('ocr-toxicity-meter');
+            const ocrButtonText = document.getElementById('ocr-button-text');
+            const ocrLoadingSpinner = document.getElementById('ocr-loading-spinner');
+            const ocrExtractedText = document.getElementById('ocr-extracted-text');
+            const ocrInterpretation = document.getElementById('ocr-interpretation');
+
+            if (!ocrImageInput.files.length) {
+                ocrErrorDiv.textContent = 'Please select an image to upload.';
+                ocrErrorDiv.classList.remove('hidden');
+                ocrResultDiv.classList.add('hidden');
+                return;
+            }
+
+            // Show loading state
+            ocrButtonText.textContent = 'Analyzing...';
+            ocrLoadingSpinner.classList.remove('hidden');
+            ocrErrorDiv.classList.add('hidden');
+            ocrResultDiv.classList.add('hidden');
+
+            const formData = new FormData();
+            formData.append('image', ocrImageInput.files[0]);
+
+            try {
+                const response = await fetch('/chat-analyser/ocr-analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    ocrExtractedText.textContent = data.text;
+                    const score = data.score;
+                    const percentage = (score * 100).toFixed(1);
+                    ocrScoreSpan.textContent = percentage + '%';
+                    ocrToxicityMeter.style.width = percentage + '%';
+                    ocrToxicityMeter.className = 'toxicity-meter-bar';
+                    if (score < 0.3) {
+                        ocrToxicityMeter.classList.add('score-low');
+                        ocrInterpretation.textContent = 'This text appears to be non-toxic and appropriate.';
+                    } else if (score < 0.7) {
+                        ocrToxicityMeter.classList.add('score-medium');
+                        ocrInterpretation.textContent = 'This text shows some potentially concerning content.';
+                    } else {
+                        ocrToxicityMeter.classList.add('score-high');
+                        ocrInterpretation.textContent = 'This text contains highly toxic content.';
+                    }
+                    ocrResultDiv.classList.remove('hidden');
+                } else {
+                    ocrErrorDiv.textContent = data.error || 'Failed to analyze image';
+                    ocrErrorDiv.classList.remove('hidden');
+                    ocrResultDiv.classList.add('hidden');
+                }
+            } catch (error) {
+                ocrErrorDiv.textContent = 'An error occurred while analyzing the image';
+                ocrErrorDiv.classList.remove('hidden');
+                ocrResultDiv.classList.add('hidden');
+            } finally {
+                ocrButtonText.textContent = 'Analyze Screenshot';
+                ocrLoadingSpinner.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html> 
