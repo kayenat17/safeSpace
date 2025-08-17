@@ -7,6 +7,12 @@ from blueprints.pinging import pinging_bp, init_pinging_database
 from blueprints.chat_analyser import chat_analyser_bp
 import smtplib
 
+
+load_dotenv()  # This loads the .env file into environment variables
+
+api_key = os.getenv("API_KEY")
+secret = os.getenv("GOOGLE_2FA_SECRET")
+
 # Import the chat analyser function
 import sys
 import os
@@ -31,7 +37,6 @@ app.config['MAIL_PORT'] = int(os.getenv('MAIL_PORT', 587))
 app.config['MAIL_USE_TLS'] = os.getenv('MAIL_USE_TLS', 'True').lower() == 'true'
 app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('GOOGLE_2FA_SECRET')
-app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_USERNAME')
 app.config['TWILIO_ACCOUNT_SID'] = os.getenv('TWILIO_ACCOUNT_SID', 'your-account-sid-from-twilio')
 app.config['TWILIO_AUTH_TOKEN'] = os.getenv('TWILIO_AUTH_TOKEN', 'your-auth-token-from-twilio')
 app.config['TWILIO_PHONE_NUMBER'] = os.getenv('TWILIO_PHONE_NUMBER', 'your-twilio-phone-number')
