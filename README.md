@@ -9,9 +9,9 @@ Safety Ping System — Customizable check-in intervals; missed check-ins trigger
 Relationship Questionnaire — Scientifically designed questionnaire that provides personalized feedback on relationship health and self-love.
 
 ### Tech Stack
-Frontend: React.js / Next.js, Tailwind CSS
+Frontend: HTML, Javascript, CSS
 
-Backend: Node.js / Express or Firebase Functions
+Backend: Flak or Firebase Functions
 
 Database: Firebase Firestore
 
